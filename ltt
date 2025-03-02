@@ -1,6 +1,11 @@
 #!/usr/bin/env php
 <?php
-require __DIR__.'/vendor/autoload.php';
+
+if(str_contains(__DIR__,'vendor/bin')) {
+    require __DIR__.'/../autoload.php';
+} else {
+    require __DIR__.'/vendor/autoload.php';
+}
 
 use LTT\Console\InitAppCommand;
 use Symfony\Component\Console\Application;
