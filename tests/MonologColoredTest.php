@@ -1,0 +1,55 @@
+<?php
+
+namespace Tests;
+
+use LTT\MonologColored;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
+use Tests\Helper\Intercept;
+
+class MonologColoredTest extends TestCase {
+    public function testMonologColored(): void {
+        $states = [
+            'Debug' => '[0;37mDEBUG[0m',
+            'Info' => '[1;34mINFO[0m',
+            'Notice' => '[1;32mNOTICE[0m',
+            'Warning' => '[0;33mWARNING[0m',
+            'Error' => '[1;33mERROR[0m',
+            'Critical' => '[0;31mCRITICAL[0m',
+            'Alert' => '[1;31mALERT[0m',
+            'Emergency' => '[1;35mEMERGENCY[0m',
+        ];
+        stream_filter_register("intercept", Intercept::class);
+        // Создаем экземпляр логгера
+        $logger = new Logger('test');
+
+        $formatter = new MonologColored(
+            "%level_name%",
+            ""
+        );
+
+        // Добавляем обработчик для вывода логов в стандартный поток вывода
+        $handler = new StreamHandler("php://stdout", Level::Debug);
+        $handler->setFormatter($formatter);
+        $logger->pushHandler($handler);
+        $logger->warning('just activate');
+        //start stream
+        $stderr = $handler->getStream();
+        stream_filter_append($stderr, "intercept");
+
+        $logger->Debug('test');
+        $logger->Info('test');
+        $logger->Notice('test');
+        $logger->Warning('test');
+        $logger->Error('test');
+        $logger->Critical('test');
+        $logger->Alert('test');
+        $logger->Emergency('test');
+        //end stream
+        $this->assertSame(Intercept::$cache, implode('',$states));
+    }
+
+    private function Info(string $string) {}
+}

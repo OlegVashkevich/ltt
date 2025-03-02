@@ -24,5 +24,8 @@
     "platform": {
       "php": "8.2"
     }
+  },
+  "require": {
+    "monolog/monolog": "^3.8"
   }
 }
