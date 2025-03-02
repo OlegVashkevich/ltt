@@ -26,6 +26,10 @@
     }
   },
   "require": {
-    "monolog/monolog": "^3.8"
-  }
+    "monolog/monolog": "^3.8",
+    "symfony/console": "^7.2"
+  },
+  "bin": [
+    "ltt"
+  ]
 }
