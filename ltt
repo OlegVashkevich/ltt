@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-if(str_contains(__DIR__,'vendor/bin')) {
-    require __DIR__.'/../autoload.php';
+if(isset($GLOBALS['_composer_autoload_path'])) {
+    require $GLOBALS['_composer_autoload_path'];
 } else {
     require __DIR__.'/vendor/autoload.php';
 }
