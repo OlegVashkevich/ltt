@@ -37,7 +37,9 @@ class MonologColoredTest extends TestCase {
         $logger->warning('just activate');
         //start stream
         $stderr = $handler->getStream();
-        stream_filter_append($stderr, "intercept");
+        if(is_resource($stderr)) {
+            stream_filter_append($stderr, "intercept");
+        }
 
         $logger->Debug('test');
         $logger->Info('test');
@@ -50,6 +52,4 @@ class MonologColoredTest extends TestCase {
         //end stream
         $this->assertSame(Intercept::$cache, implode('',$states));
     }
-
-    private function Info(string $string) {}
 }
