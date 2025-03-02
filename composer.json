@@ -1,4 +1,6 @@
 {
+  "name": "olegvashkevich/ltt",
+  "description": "Libs, tricks and tips",
   "autoload": {
     "psr-4": {
       "LTT\\": "src/"

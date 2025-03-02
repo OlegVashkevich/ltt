@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 // the name of the command is what users type after "php bin/console"
 #[AsCommand(name: 'app:init')]
-class CreateUserCommand extends Command
+class InitAppCommand extends Command
 {
     private bool $withCron;
 

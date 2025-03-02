@@ -2,13 +2,13 @@
 <?php
 require __DIR__.'/vendor/autoload.php';
 
-use LTT\Console\CreateUserCommand;
+use LTT\Console\InitAppCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
 // ... register commands
-$application->add(new CreateUserCommand(true));
+$application->add(new InitAppCommand(true));
 
 try {
     $application->run();
