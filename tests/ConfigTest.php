@@ -1,11 +1,11 @@
 <?php
 
-namespace tests;
+namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase {
-    public function testConfig(): void
+    public function testDefaultConfig(): void
     {
         $defaultConfig = [
             'secret' => 'secret#very_secret',
@@ -19,5 +19,13 @@ class ConfigTest extends TestCase {
         //забираем конфиг
         $config = require APP_ROOT . '/config/config.php';
         $this->assertSame($defaultConfig, (array) $config);
+    }
+    public function testGetSecret(): void
+    {
+        $defaultSecret = 'your_secret_key_here2';
+        //забираем конфиг
+        $config = require APP_ROOT . '/config/config.php';
+        $secret_lvl1  = $config->getSecret($config['secret']);
+        $this->assertSame($defaultSecret, $secret_lvl1);
     }
 }
