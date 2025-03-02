@@ -1,0 +1,21 @@
+{
+  "autoload": {
+    "psr-4": {
+      "LTT\\": "src/"
+    },
+    "files": [
+      "config/const.php"
+    ]
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1"
+  },
+  "scripts": {
+    "stan": "vendor/bin/phpstan analyse -c phpstan.neon"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
+  }
+}
