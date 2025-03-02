@@ -20,13 +20,13 @@
   },
   "scripts": {
     "stan": "vendor/bin/phpstan analyse -c phpstan.neon",
-    "test": "vendor/bin/phpunit tests"
+    "test": "vendor/bin/phpunit tests",
+    "pre-install-cmd": "@composer config bin-dir bin/"
   },
   "config": {
     "platform": {
       "php": "8.2"
-    },
-    "bin-dir": "bin"
+    }
   },
   "require": {
     "monolog/monolog": "^3.8",
