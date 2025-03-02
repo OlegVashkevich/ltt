@@ -9,19 +9,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 // the name of the command is what users type after "php bin/console"
-#[AsCommand(name: 'app:init')]
-class InitAppCommand extends Command
+#[AsCommand(name: 'init')]
+class InitCommand extends Command
 {
-    private bool $withCron;
 
-    public function __construct(bool $withCron = false)
+    public function __construct(private readonly bool $withCron = false)
     {
         // best practices recommend to call the parent constructor first and
         // then set your own properties. That wouldn't work in this case
         // because configure() needs the properties set in this constructor
-        $this->withCron = $withCron;
 
         parent::__construct();
+
+        print_r($this->withCron);
     }
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -52,7 +52,7 @@ class InitAppCommand extends Command
             ->setDescription('Initialize a new app.')
             // the command help shown when running the command with the "--help" option
             ->setHelp('This command allows you to create a new app struct...')
-            ->addArgument('withCron', $this->withCron ? InputArgument::REQUIRED : InputArgument::OPTIONAL, 'Init CRON')
+            ->addArgument('withCron', $this->withCron ? InputArgument::REQUIRED: InputArgument::OPTIONAL, 'Init CRON')
         ;
     }
 }
