@@ -80,9 +80,6 @@ class Crontab
         $this->checkOS();
         $this->content = $this->getCrontabContent();
         $this->content = $this->cleanSection();
-        print_r('tt1');
-        print_r($this->content);
-        print_r('tt2');
         $this->save();
     }
 
@@ -172,7 +169,7 @@ class Crontab
         try {
             $content = (string) shell_exec('crontab -l');
         } catch (Exception $e) {
-            return '';
+            return $e->getMessage();
         }
 
         return $content;

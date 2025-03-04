@@ -21,7 +21,6 @@ class CrontabTest extends TestCase {
         foreach ($tasks as &$task) {
             $task = (string) $task;
         }
-        print_r($tasks);
         $this->assertSame([
             '* * * * * ' . PHP_BINARY . ' task1.php',
             '* * * * * ' . PHP_BINARY . ' task2.php',
