@@ -26,7 +26,7 @@ class Crontab
         try {
             $this->tasks = $this->getTasks();
         } catch (Exception $e) {
-            throw new Exception('Ошибка');
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -43,9 +43,6 @@ class Crontab
         $this->checkOS();
 
         foreach ($this->tasks as $key => $task) {
-            if (empty($task->expression)) {
-                $this->tasks[$key]->expression = '* * * * *';
-            }
 
             if (empty($task->command)) {
                 throw new Exception("Команда не должна быть пустой. Введите и попробуйте еще раз.");
@@ -83,6 +80,9 @@ class Crontab
         $this->checkOS();
         $this->content = $this->getCrontabContent();
         $this->content = $this->cleanSection();
+        print_r('tt1');
+        print_r($this->content);
+        print_r('tt2');
         $this->save();
     }
 
@@ -92,7 +92,7 @@ class Crontab
      */
     private function checkOS():void
     {
-        if (!str_contains(PHP_OS, 'WIN')) {
+        if (str_contains(PHP_OS, 'WIN')) {
             throw new Exception(
                 'Ваша операционная система не поддерживает работу с этой командой'
             );
@@ -104,7 +104,7 @@ class Crontab
      * @return list<Task>
      * @throws Exception
      */
-    private function getTasks(): array
+    public function getTasks(): array
     {
         $this->checkOS();
         $content = $this->getCrontabContent();
@@ -137,7 +137,7 @@ class Crontab
 
             $this->content .= self::TASKS_BLOCK_START . PHP_EOL;
             foreach ($this->tasks as $task) {
-                $this->content .= $task->expression . ' ' . PHP_BINARY . ' ' . $task->command . PHP_EOL;
+                $this->content .= $task . PHP_EOL;
             }
             $this->content .= self::TASKS_BLOCK_END . PHP_EOL;
         }
@@ -170,7 +170,7 @@ class Crontab
     private function getCrontabContent(): string
     {
         try {
-            $content = (string) exec('crontab -l 2>/dev/null');
+            $content = (string) shell_exec('crontab -l');
         } catch (Exception $e) {
             return '';
         }
@@ -185,7 +185,6 @@ class Crontab
     private function save(): void
     {
         $this->content = str_replace(['%', '"', '$'], ['%%', '\"', '\$'], $this->content);
-
         try {
             exec('echo "' . $this->content . '" | crontab -');
         } catch (Exception $e) {

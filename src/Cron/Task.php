@@ -2,7 +2,9 @@
 
 namespace LTT\Cron;
 
-class Task {
+use Stringable;
+
+class Task implements Stringable {
     public const SUNDAY = 0;
     public const MONDAY = 1;
     public const TUESDAY = 2;
@@ -15,9 +17,15 @@ class Task {
      * @param  string  $command команда shell или php скрипт
      * @param  string  $expression Выражение cron, представляющее частоту выполнения команды.
      */
+
     public function __construct(public string $command = '', public string $expression = '* * * * *') {}
 
-        /**
+    public function __toString(): string
+    {
+        return $this->expression.$this->getSeparator().$this->command;
+    }
+
+    /**
      * Парсит задачу полученную из crontab
      *
      * @param  string  $task
@@ -25,11 +33,16 @@ class Task {
      */
     public function parseTask(string $task): static
     {
-        $data = explode(' ' . PHP_BINARY . ' ', $task);
+        $data = explode($this->getSeparator(), $task);
         $this->expression = $data[0];
         $this->command = $data[1];
 
         return $this;
+    }
+
+    public function getSeparator(): string
+    {
+        return ' ' . PHP_BINARY . ' ';
     }
 
     /**
@@ -360,11 +373,11 @@ class Task {
     /**
      * Команда будет запускаться еженедельно в определенный день и время.
      *
-     * @param  array|mixed  $dayOfWeek
+     * @param  int<0, 6>|string|array<int,int<0, 6>>  $dayOfWeek
      * @param  string  $time
      * @return $this
      */
-    public function weeklyOn(mixed $dayOfWeek, string $time = '0:0'): static
+    public function weeklyOn(int|string|array $dayOfWeek, string $time = '0:0'): static
     {
         $this->dailyAt($time);
 
@@ -474,10 +487,10 @@ class Task {
     /**
      * Укажите дни недели, в которые должна выполняться команда
      *
-     * @param  array|mixed  $days
+     * @param  int<0, 6>|string|array<int,int<0, 6>>  $days
      * @return $this
      */
-    public function days(mixed $days): static
+    public function days(int|string|array $days): static
     {
         $days = is_array($days) ? $days : func_get_args();
 
