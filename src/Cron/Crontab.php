@@ -42,8 +42,10 @@ class Crontab
     {
         $path = $this->root_path.'/'.$schedule_path;
         if (file_exists($path)) {
-            $this->addTask((new Task($schedule_path.' '.self::HIDDEN_TASK_COMMENT.' init'))->hourly());
-            $this->saveTasks();
+            $this->addTask((new Task($path.' '.self::HIDDEN_TASK_COMMENT.' init'))->hourly(), true);
+            if (count($this->tasks) > 0) {
+                $this->saveTasks();
+            }
         } else {
             throw new Exception('Файла с расписанием не существует.');
         }
@@ -137,6 +139,12 @@ class Crontab
         $unique = true;
         if ($checkUnique) {
             foreach ($this->tasks as $cron_task) {
+                if ($cron_task->command == $task->command) {
+                    $unique = false;
+                }
+            }
+            //и среди системных и скрытых задач тоже ищем
+            foreach ($this->hidden_tasks as $cron_task) {
                 if ($cron_task->command == $task->command) {
                     $unique = false;
                 }

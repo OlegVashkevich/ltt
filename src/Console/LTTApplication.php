@@ -3,6 +3,7 @@
 namespace LTT\Console;
 
 use Exception;
+use LTT\Console\Cron\DestroyCommand;
 use LTT\Console\Cron\OffCommand;
 use LTT\Console\Cron\OnCommand;
 use LTT\Console\Cron\ShowCommand;
@@ -28,6 +29,7 @@ class LTTApplication extends Application
         $this->add(new ShowCommand());
         $this->add(new OnCommand());
         $this->add(new OffCommand());
+        $this->add(new DestroyCommand());
     }
 
     public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
