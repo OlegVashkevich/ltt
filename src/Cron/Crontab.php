@@ -51,6 +51,18 @@ class Crontab
         }
     }
 
+    public function rebuild(): void
+    {
+        foreach ($this->hidden_tasks as $task) {
+            if (str_contains($task->command, self::HIDDEN_TASK_COMMENT.' init')) {
+                $path = str_replace(' '.self::HIDDEN_TASK_COMMENT.' init', '', $task->command);
+            }
+        }
+        if (isset($path) && file_exists($path)) {
+            exec(PHP_BINARY.' '.$path);
+        }
+    }
+
     /**
      * Выводит список задач
      *
