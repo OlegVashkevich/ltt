@@ -21,7 +21,7 @@ class Crontab
      */
     public function __construct(
         private readonly string $root_path,
-        private readonly string $log_path
+        private readonly string $log_path,
     ) {
         try {
             $this->tasks = $this->getTasks();
@@ -31,6 +31,8 @@ class Crontab
     }
 
     /**
+     * Сохраняет раздел с задачами
+     *
      * @return void
      * @throws Exception
      */
@@ -43,7 +45,6 @@ class Crontab
         $this->checkOS();
 
         foreach ($this->tasks as $key => $task) {
-
             if (empty($task->command)) {
                 throw new Exception("Команда не должна быть пустой. Введите и попробуйте еще раз.");
             }
@@ -51,7 +52,7 @@ class Crontab
             $this->tasks[$key]->command = str_replace(
                 ['{appRoot}', '{appLog}'],
                 [$this->root_path, $this->log_path],
-                $task->command
+                $task->command,
             );
         }
 
@@ -63,15 +64,30 @@ class Crontab
     }
 
     /**
+     * Добавляет новую задачу к существующим
+     *
      * @param  Task  $task
+     * @param  bool  $checkUnique
      * @return void
      */
-    public function addTask(Task $task): void
+    public function addTask(Task $task, bool $checkUnique = false): void
     {
-        $this->tasks[] = $task;
+        $unique = true;
+        if ($checkUnique) {
+            foreach ($this->tasks as $key => $cron_task) {
+                if ($cron_task->command == $task->command) {
+                    $unique = false;
+                }
+            }
+        }
+        if ($unique) {
+            $this->tasks[] = $task;
+        }
     }
 
     /**
+     * Удаляет раздел задач
+     *
      * @return void
      * @throws Exception
      */
@@ -84,20 +100,24 @@ class Crontab
     }
 
     /**
+     * Проверка операционной системы
+     *
      * @return void
      * @throws Exception
      */
-    private function checkOS():void
+    private function checkOS(): void
     {
         if (str_contains(PHP_OS, 'WIN')) {
             throw new Exception(
-                'Ваша операционная система не поддерживает работу с этой командой'
+                'Ваша операционная система не поддерживает работу с этой командой',
             );
         }
     }
 
 
     /**
+     * Достает раздел с задачами и парсит их
+     *
      * @return list<Task>
      * @throws Exception
      */
@@ -105,7 +125,7 @@ class Crontab
     {
         $this->checkOS();
         $content = $this->getCrontabContent();
-        $pattern = '!(' . self::TASKS_BLOCK_START . ')(.*?)(' . self::TASKS_BLOCK_END . ')!s';
+        $pattern = '!('.self::TASKS_BLOCK_START.')(.*?)('.self::TASKS_BLOCK_END.')!s';
 
         if (preg_match($pattern, $content, $matches)) {
             $tasks = trim($matches[2], PHP_EOL);
@@ -121,7 +141,7 @@ class Crontab
     }
 
     /**
-     * Создать раздел с задачами
+     * Создает раздел с задачами
      *
      * @return string
      */
@@ -132,42 +152,42 @@ class Crontab
                 $this->content .= PHP_EOL;
             }
 
-            $this->content .= self::TASKS_BLOCK_START . PHP_EOL;
+            $this->content .= self::TASKS_BLOCK_START.PHP_EOL;
             foreach ($this->tasks as $task) {
-                $this->content .= $task . PHP_EOL;
+                $this->content .= $task.PHP_EOL;
             }
-            $this->content .= self::TASKS_BLOCK_END . PHP_EOL;
+            $this->content .= self::TASKS_BLOCK_END.PHP_EOL;
         }
 
         return $this->content;
     }
 
     /**
-     * Очистить раздел задач в содержимом crontab
+     * Очищает раздел задач в содержимом crontab
      *
      * @return string
      */
     private function cleanSection(): string
     {
         /** @var string $out */
-        $out =  preg_replace(
-            '!' . preg_quote(self::TASKS_BLOCK_START) . '.*?'
-            . preg_quote(self::TASKS_BLOCK_END . PHP_EOL) . '!s',
+        $out = preg_replace(
+            '!'.preg_quote(self::TASKS_BLOCK_START).'.*?'
+            .preg_quote(self::TASKS_BLOCK_END.PHP_EOL).'!s',
             '',
-            $this->content
+            $this->content,
         );
         return $out;
     }
 
     /**
-     * Получаем содержимое crontab
+     * Получает содержимое crontab
      *
      * @return string
      */
     private function getCrontabContent(): string
     {
         try {
-            $content = (string) shell_exec('crontab -l');
+            $content = (string)shell_exec('crontab -l');
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -176,6 +196,8 @@ class Crontab
     }
 
     /**
+     * Сохраняет в crontab
+     *
      * @return void
      * @throws Exception
      */
@@ -183,10 +205,10 @@ class Crontab
     {
         $this->content = str_replace(['%', '"', '$'], ['%%', '\"', '\$'], $this->content);
         try {
-            exec('echo "' . $this->content . '" | crontab -');
+            exec('echo "'.$this->content.'" | crontab -');
         } catch (Exception $e) {
             $error = '';
-            if($e->getPrevious()) {
+            if ($e->getPrevious()) {
                 $error = $e->getPrevious()->getMessage();
             }
             throw new Exception('Ошибка при сохранении crontab: '.$error, 0, $e);
