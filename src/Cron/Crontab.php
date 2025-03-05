@@ -50,6 +50,49 @@ class Crontab
     }
 
     /**
+     * Выводит список задач
+     *
+     * @return string
+     */
+    public function show(): string
+    {
+        $out = PHP_EOL;
+        foreach ($this->tasks as $num => $task) {
+            $out .= ($num + 1).' | '.$task.PHP_EOL;
+        }
+        $out .= PHP_EOL;
+        return (string)$out;
+    }
+
+    /**
+     * Выключает задачу по ее номеру
+     *
+     * @param  int  $num
+     * @return void
+     */
+    public function disable(int $num): void
+    {
+        $num = $num - 1;
+        if (isset($this->tasks[$num])) {
+            $this->tasks[$num]->off = true;
+        }
+    }
+
+    /**
+     * Включает задачу по ее номеру
+     *
+     * @param  int  $num
+     * @return void
+     */
+    public function enable(int $num): void
+    {
+        $num = $num - 1;
+        if (isset($this->tasks[$num])) {
+            $this->tasks[$num]->off = false;
+        }
+    }
+
+    /**
      * Сохраняет раздел с задачами
      *
      * @return void

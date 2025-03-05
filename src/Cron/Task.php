@@ -14,16 +14,27 @@ class Task implements Stringable
     public const FRIDAY = 5;
     public const SATURDAY = 6;
 
+    public const OFF_TAG = '#off# ';
+
     /**
      * @param  string  $command  команда shell или php скрипт
-     * @param  string  $expression  Выражение cron, представляющее частоту выполнения команды.
+     * @param  string  $expression  выражение cron, представляющее частоту выполнения команды.
+     * @param  bool  $off  закомментированная задача
      */
-
-    public function __construct(public string $command = '', public string $expression = '* * * * *') {}
+    public function __construct(
+        public string $command = '',
+        public string $expression = '* * * * *',
+        public bool $off = false,
+    ) {}
 
     public function __toString(): string
     {
-        return $this->expression.$this->getSeparator().$this->command;
+        return $this->getOffTag().$this->expression.$this->getSeparator().$this->command;
+    }
+
+    private function getOffTag(): string
+    {
+        return $this->off ? self::OFF_TAG : '';
     }
 
     /**
@@ -35,7 +46,13 @@ class Task implements Stringable
     public function parseTask(string $task): static
     {
         $data = explode($this->getSeparator(), $task);
-        $this->expression = $data[0];
+        if (str_contains($data[0], self::OFF_TAG)) {
+            $this->expression = str_replace(self::OFF_TAG, '', $data[0]);
+            $this->off = true;
+        } else {
+            $this->expression = $data[0];
+            $this->off = false;
+        }
         $this->command = $data[1];
 
         return $this;

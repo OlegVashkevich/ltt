@@ -35,11 +35,11 @@ class CrontabTest extends TestCase
         foreach ($tasks as &$task) {
             $task = (string)$task;
         }
+        $crontab2->removeTasks();
         $this->assertSame([
             '0 0 * * * '.PHP_BINARY.' task1.php',
             '* * * * * '.PHP_BINARY.' task2.php',
         ], $tasks);
-        $crontab2->removeTasks();
     }
 
     /**
@@ -83,5 +83,54 @@ class CrontabTest extends TestCase
         $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
         $crontab->tasks = [new Task('')];
         $crontab->saveTasks();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testShow(): void
+    {
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab->removeTasks();
+        $crontab->addTask((new Task('task1.php'))->daily());
+        $crontab->addTask(new Task('task2.php'));
+        $crontab->addTask(new Task('task3.php'));
+        $crontab->saveTasks();
+        //echo $crontab->show();
+        $out = PHP_EOL;
+        $out .= '1 | 0 0 * * * '.PHP_BINARY.' task1.php'.PHP_EOL;
+        $out .= '2 | * * * * * '.PHP_BINARY.' task2.php'.PHP_EOL;
+        $out .= '3 | * * * * * '.PHP_BINARY.' task3.php'.PHP_EOL;
+        $out .= PHP_EOL;
+        $this->assertEquals($out, $crontab->show());
+        $crontab->disable(2);
+        //echo $crontab->show();
+        $out = PHP_EOL;
+        $out .= '1 | 0 0 * * * '.PHP_BINARY.' task1.php'.PHP_EOL;
+        $out .= '2 | #off# * * * * * '.PHP_BINARY.' task2.php'.PHP_EOL;
+        $out .= '3 | * * * * * '.PHP_BINARY.' task3.php'.PHP_EOL;
+        $out .= PHP_EOL;
+        $crontab->saveTasks();
+        $this->assertEquals($out, $crontab->show());
+        $crontab_with_off = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab->enable(2);
+        //echo $crontab->show();
+        $out = PHP_EOL;
+        $out .= '1 | 0 0 * * * '.PHP_BINARY.' task1.php'.PHP_EOL;
+        $out .= '2 | * * * * * '.PHP_BINARY.' task2.php'.PHP_EOL;
+        $out .= '3 | * * * * * '.PHP_BINARY.' task3.php'.PHP_EOL;
+        $out .= PHP_EOL;
+        $this->assertEquals($out, $crontab->show());
+        $crontab->removeTasks();
+
+        $tasks = $crontab_with_off->tasks;
+        foreach ($tasks as &$task) {
+            $task = (string)$task;
+        }
+        $this->assertSame([
+            '0 0 * * * '.PHP_BINARY.' task1.php',
+            '#off# * * * * * '.PHP_BINARY.' task2.php',
+            '* * * * * '.PHP_BINARY.' task3.php',
+        ], $tasks);
     }
 }
