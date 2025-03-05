@@ -40,7 +40,7 @@ class Crontab
      */
     public function init(string $schedule_path = 'config/schedule.php'): void
     {
-        $path = $this->root_path.$schedule_path;
+        $path = $this->root_path.'/'.$schedule_path;
         if (file_exists($path)) {
             $this->addTask((new Task($schedule_path.' '.self::HIDDEN_TASK_COMMENT.' init'))->hourly());
             $this->saveTasks();
@@ -207,7 +207,7 @@ class Crontab
             '',
             $this->content,
         );
-        return $out;
+        return trim($out, PHP_EOL);
     }
 
     /**
