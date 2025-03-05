@@ -15,12 +15,12 @@ use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use \LTT\Console\Cron\InitCommand as CronInitCommand;
+use LTT\Console\Cron\InitCommand as CronInitCommand;
 
 class LTTApplication extends Application
 {
-    const NAME = 'Libs, tricks and tips application';
-    const VERSION = '0.2';
+    public const NAME = 'Libs, tricks and tips application';
+    public const VERSION = '0.2';
 
     public function __construct()
     {

@@ -6,9 +6,9 @@ use Exception;
 
 class Crontab
 {
-    private const TASKS_BLOCK_START = '#~~~ APP_TASKS START ~~~';
-    private const TASKS_BLOCK_END = '#~~~ APP_TASKS END ~~~';
-    private const HIDDEN_TASK_COMMENT = '#~~~ APP_TASKS SYSTEM';
+    private string $tasks_block_start;
+    private string $tasks_block_end;
+    private string $hidden_task_comment;
 
     /**
      * @var list<Task>
@@ -27,7 +27,11 @@ class Crontab
     public function __construct(
         private readonly string $root_path,
         private readonly string $log_path,
+        string $app_name = "APP_TASKS",
     ) {
+        $this->tasks_block_start = '#~~~ '.$app_name.' START ~~~';
+        $this->tasks_block_end = '#~~~ '.$app_name.' END ~~~';
+        $this->hidden_task_comment = '#~~~ '.$app_name.' SYSTEM ~~~';
         $this->getTasks();
     }
 
@@ -42,7 +46,7 @@ class Crontab
     {
         $path = $this->root_path.'/'.$schedule_path;
         if (file_exists($path)) {
-            $this->addTask((new Task($path.' '.self::HIDDEN_TASK_COMMENT.' init'))->hourly(), true);
+            $this->addTask((new Task($path.' '.$this->hidden_task_comment.' init'))->hourly());
             if (count($this->tasks) > 0) {
                 $this->saveTasks();
             }
@@ -54,8 +58,8 @@ class Crontab
     public function rebuild(): void
     {
         foreach ($this->hidden_tasks as $task) {
-            if (str_contains($task->command, self::HIDDEN_TASK_COMMENT.' init')) {
-                $path = str_replace(' '.self::HIDDEN_TASK_COMMENT.' init', '', $task->command);
+            if (str_contains($task->command, $this->hidden_task_comment.' init')) {
+                $path = str_replace(' '.$this->hidden_task_comment.' init', '', $task->command);
             }
         }
         if (isset($path) && file_exists($path)) {
@@ -75,7 +79,7 @@ class Crontab
             $out .= ($num + 1).' | '.$task.PHP_EOL;
         }
         $out .= PHP_EOL;
-        return (string)$out;
+        return $out;
     }
 
     /**
@@ -143,26 +147,28 @@ class Crontab
      * Добавляет новую задачу к существующим
      *
      * @param  Task  $task
-     * @param  bool  $checkUnique
+     * @param  bool  $rewrite
      * @return void
      */
-    public function addTask(Task $task, bool $checkUnique = false): void
+    public function addTask(Task $task, bool $rewrite = true): void
     {
-        $unique = true;
-        if ($checkUnique) {
-            foreach ($this->tasks as $cron_task) {
+        $rewritten = false;
+        if ($rewrite) {
+            foreach ($this->tasks as &$cron_task) {
                 if ($cron_task->command == $task->command) {
-                    $unique = false;
+                    $cron_task = $task;
+                    $rewritten = true;
                 }
             }
             //и среди системных и скрытых задач тоже ищем
-            foreach ($this->hidden_tasks as $cron_task) {
-                if ($cron_task->command == $task->command) {
-                    $unique = false;
+            foreach ($this->hidden_tasks as &$cron_hidden_task) {
+                if ($cron_hidden_task->command == $task->command) {
+                    $cron_hidden_task = $task;
+                    $rewritten = true;
                 }
             }
         }
-        if ($unique) {
+        if (!$rewritten) {
             $this->tasks[] = $task;
         }
     }
@@ -206,7 +212,7 @@ class Crontab
     {
         $this->checkOS();
         $content = $this->getCrontabContent();
-        $pattern = '!('.self::TASKS_BLOCK_START.')(.*?)('.self::TASKS_BLOCK_END.')!s';
+        $pattern = '!('.$this->tasks_block_start.')(.*?)('.$this->tasks_block_end.')!s';
 
         $data = [];
         $hidden = [];
@@ -217,7 +223,7 @@ class Crontab
             foreach ($tasks as $task) {
                 $obj = (new Task())->parseTask($task);
                 //задачи помеченные как скрытые - не трогаем
-                if (str_contains($obj->command, self::HIDDEN_TASK_COMMENT)) {
+                if (str_contains($obj->command, $this->hidden_task_comment)) {
                     $hidden[] = $obj;
                 } else {
                     $data[] = $obj;
@@ -240,7 +246,7 @@ class Crontab
                 $this->content .= PHP_EOL;
             }
 
-            $this->content .= self::TASKS_BLOCK_START.PHP_EOL;
+            $this->content .= $this->tasks_block_start.PHP_EOL;
             foreach ($this->tasks as $task) {
                 $this->content .= $task.PHP_EOL;
             }
@@ -250,7 +256,7 @@ class Crontab
                     $this->content .= $task.PHP_EOL;
                 }
             }
-            $this->content .= self::TASKS_BLOCK_END.PHP_EOL;
+            $this->content .= $this->tasks_block_end.PHP_EOL;
         }
 
         return $this->content;
@@ -265,8 +271,8 @@ class Crontab
     {
         /** @var string $out */
         $out = preg_replace(
-            '!'.preg_quote(self::TASKS_BLOCK_START).'.*?'
-            .preg_quote(self::TASKS_BLOCK_END.PHP_EOL).'!s',
+            '!'.preg_quote($this->tasks_block_start).'.*?'
+            .preg_quote($this->tasks_block_end.PHP_EOL).'!s',
             '',
             $this->content,
         );

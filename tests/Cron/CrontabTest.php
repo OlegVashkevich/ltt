@@ -14,7 +14,7 @@ class CrontabTest extends TestCase
      */
     public function testConstructor(): void
     {
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $this->assertObjectHasProperty('root_path', $crontab);
         $this->assertObjectHasProperty('log_path', $crontab);
     }
@@ -24,13 +24,13 @@ class CrontabTest extends TestCase
      */
     public function testAdd(): void
     {
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->addTask((new Task('task1.php'))->daily());
         $crontab->addTask(new Task('task2.php'));
-        $crontab->addTask(new Task('task2.php'), true);
+        $crontab->addTask(new Task('task2.php'));
         $crontab->saveTasks();
 
-        $crontab2 = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab2 = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $tasks = $crontab2->tasks;
         foreach ($tasks as &$task) {
             $task = (string)$task;
@@ -47,7 +47,7 @@ class CrontabTest extends TestCase
      */
     public function testInit(): void
     {
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->init();
         $crontab->removeTasks();
         $this->expectNotToPerformAssertions();
@@ -59,7 +59,7 @@ class CrontabTest extends TestCase
     public function testInitException(): void
     {
         $this->expectExceptionMessage('Файла с расписанием не существует.');
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->init('bad_file_path');
     }
 
@@ -69,7 +69,7 @@ class CrontabTest extends TestCase
     public function testEmptyTasksException(): void
     {
         $this->expectExceptionMessage('Список задач пуст. Добавьте задачи и попробуйте еще раз.');
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->tasks = [];
         $crontab->saveTasks();
     }
@@ -80,7 +80,7 @@ class CrontabTest extends TestCase
     public function testEmptyCommandTasksException(): void
     {
         $this->expectExceptionMessage('Команда не должна быть пустой. Введите и попробуйте еще раз.');
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->tasks = [new Task('')];
         $crontab->saveTasks();
     }
@@ -90,7 +90,7 @@ class CrontabTest extends TestCase
      */
     public function testShow(): void
     {
-        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->removeTasks();
         $crontab->addTask((new Task('task1.php'))->daily());
         $crontab->addTask(new Task('task2.php'));
@@ -112,7 +112,7 @@ class CrontabTest extends TestCase
         $out .= PHP_EOL;
         $crontab->saveTasks();
         $this->assertEquals($out, $crontab->show());
-        $crontab_with_off = new Crontab(__DIR__.'/../..', __DIR__.'/../../log');
+        $crontab_with_off = new Crontab(__DIR__.'/../..', __DIR__.'/../../log', 'TEST');
         $crontab->enable(2);
         //echo $crontab->show();
         $out = PHP_EOL;
