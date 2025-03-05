@@ -22,16 +22,16 @@ class CrontabTest extends TestCase
     public function testAdd(): void
     {
         $crontab = new Crontab('root_path', 'root_path/log');
-        $crontab->addTask(new Task('task1.php'));
+        $crontab->addTask((new Task('task1.php'))->daily());
         $crontab->addTask(new Task('task2.php'));
         $crontab->addTask(new Task('task2.php'), true);
         $crontab->saveTasks();
-        $tasks = $crontab->getTasks();
+        $tasks = $crontab->tasks;
         foreach ($tasks as &$task) {
             $task = (string)$task;
         }
         $this->assertSame([
-            '* * * * * '.PHP_BINARY.' task1.php',
+            '0 0 * * * '.PHP_BINARY.' task1.php',
             '* * * * * '.PHP_BINARY.' task2.php',
         ], $tasks);
         $crontab->removeTasks();

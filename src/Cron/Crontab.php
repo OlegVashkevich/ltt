@@ -6,13 +6,18 @@ use Exception;
 
 class Crontab
 {
-    private const TASKS_BLOCK_START = '#~ APP_TASKS START';
-    private const TASKS_BLOCK_END = '#~ APP_TASKS END';
+    private const TASKS_BLOCK_START = '#~~~ APP_TASKS START ~~~';
+    private const TASKS_BLOCK_END = '#~~~ APP_TASKS END ~~~';
+    private const HIDDEN_TASK_COMMENT = '#~~~ APP_TASKS SYSTEM';
 
     /**
      * @var list<Task>
      */
-    private array $tasks = [];
+    public array $tasks = [];
+    /**
+     * @var list<Task>
+     */
+    private array $hidden_tasks = [];
 
     private string $content = '';
 
@@ -23,10 +28,24 @@ class Crontab
         private readonly string $root_path,
         private readonly string $log_path,
     ) {
-        try {
-            $this->tasks = $this->getTasks();
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+        $this->getTasks();
+    }
+
+    /**
+     * Создает скрытую задачу для обновления списка задач по расписанию
+     *
+     * @param  string  $schedule_path
+     * @return void
+     * @throws Exception
+     */
+    public function init(string $schedule_path = 'config/schedule.php'): void
+    {
+        $path = $this->root_path.$schedule_path;
+        if (file_exists($path)) {
+            $this->addTask((new Task($schedule_path.' '.self::HIDDEN_TASK_COMMENT.' init'))->hourly());
+            $this->saveTasks();
+        } else {
+            throw new Exception('Файла с расписанием не существует.');
         }
     }
 
@@ -48,7 +67,7 @@ class Crontab
             if (empty($task->command)) {
                 throw new Exception("Команда не должна быть пустой. Введите и попробуйте еще раз.");
             }
-
+            //TODO {appRoot}, {appLog}
             $this->tasks[$key]->command = str_replace(
                 ['{appRoot}', '{appLog}'],
                 [$this->root_path, $this->log_path],
@@ -74,7 +93,7 @@ class Crontab
     {
         $unique = true;
         if ($checkUnique) {
-            foreach ($this->tasks as $key => $cron_task) {
+            foreach ($this->tasks as $cron_task) {
                 if ($cron_task->command == $task->command) {
                     $unique = false;
                 }
@@ -118,26 +137,32 @@ class Crontab
     /**
      * Достает раздел с задачами и парсит их
      *
-     * @return list<Task>
      * @throws Exception
      */
-    public function getTasks(): array
+    private function getTasks(): void
     {
         $this->checkOS();
         $content = $this->getCrontabContent();
         $pattern = '!('.self::TASKS_BLOCK_START.')(.*?)('.self::TASKS_BLOCK_END.')!s';
 
+        $data = [];
+        $hidden = [];
+
         if (preg_match($pattern, $content, $matches)) {
             $tasks = trim($matches[2], PHP_EOL);
             $tasks = explode(PHP_EOL, $tasks);
-            $data = [];
             foreach ($tasks as $task) {
-                $data[] = (new Task())->parseTask($task);
+                $obj = (new Task())->parseTask($task);
+                //задачи помеченные как скрытые - не трогаем
+                if (str_contains($obj->command, self::HIDDEN_TASK_COMMENT)) {
+                    $hidden[] = $obj;
+                } else {
+                    $data[] = $obj;
+                }
             }
-            return $data;
         }
-
-        return [];
+        $this->hidden_tasks = $hidden;
+        $this->tasks = $data;
     }
 
     /**
@@ -155,6 +180,12 @@ class Crontab
             $this->content .= self::TASKS_BLOCK_START.PHP_EOL;
             foreach ($this->tasks as $task) {
                 $this->content .= $task.PHP_EOL;
+            }
+            //hidden
+            if ($this->hidden_tasks) {
+                foreach ($this->hidden_tasks as $task) {
+                    $this->content .= $task.PHP_EOL;
+                }
             }
             $this->content .= self::TASKS_BLOCK_END.PHP_EOL;
         }

@@ -4,7 +4,8 @@ namespace LTT\Cron;
 
 use Stringable;
 
-class Task implements Stringable {
+class Task implements Stringable
+{
     public const SUNDAY = 0;
     public const MONDAY = 1;
     public const TUESDAY = 2;
@@ -14,8 +15,8 @@ class Task implements Stringable {
     public const SATURDAY = 6;
 
     /**
-     * @param  string  $command команда shell или php скрипт
-     * @param  string  $expression Выражение cron, представляющее частоту выполнения команды.
+     * @param  string  $command  команда shell или php скрипт
+     * @param  string  $expression  Выражение cron, представляющее частоту выполнения команды.
      */
 
     public function __construct(public string $command = '', public string $expression = '* * * * *') {}
@@ -40,9 +41,12 @@ class Task implements Stringable {
         return $this;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getSeparator(): string
     {
-        return ' ' . PHP_BINARY . ' ';
+        return ' '.PHP_BINARY.' ';
     }
 
     /**
@@ -237,7 +241,7 @@ class Task implements Stringable {
 
         return $this->hourBasedSchedule(
             count($segments) === 2 ? $segments[1] : '0',
-            $segments[0]
+            $segments[0],
         );
     }
 
@@ -365,7 +369,8 @@ class Task implements Stringable {
      */
     public function weekly(): static
     {
-        return $this->spliceIntoPosition(1, "0")
+        return $this
+            ->spliceIntoPosition(1, "0")
             ->spliceIntoPosition(2, "0")
             ->spliceIntoPosition(5, "0");
     }
@@ -391,7 +396,8 @@ class Task implements Stringable {
      */
     public function monthly(): static
     {
-        return $this->spliceIntoPosition(1, "0")
+        return $this
+            ->spliceIntoPosition(1, "0")
             ->spliceIntoPosition(2, "0")
             ->spliceIntoPosition(3, "1");
     }
@@ -407,7 +413,7 @@ class Task implements Stringable {
     {
         $this->dailyAt($time);
 
-        return $this->spliceIntoPosition(3, (string) $dayOfMonth);
+        return $this->spliceIntoPosition(3, (string)$dayOfMonth);
     }
 
     /**
@@ -434,7 +440,8 @@ class Task implements Stringable {
      */
     public function quarterly(): static
     {
-        return $this->spliceIntoPosition(1, "0")
+        return $this
+            ->spliceIntoPosition(1, "0")
             ->spliceIntoPosition(2, "0")
             ->spliceIntoPosition(3, "1")
             ->spliceIntoPosition(4, '1-12/3');
@@ -451,7 +458,8 @@ class Task implements Stringable {
     {
         $this->dailyAt($time);
 
-        return $this->spliceIntoPosition(3, (string) $dayOfQuarter)
+        return $this
+            ->spliceIntoPosition(3, (string)$dayOfQuarter)
             ->spliceIntoPosition(4, '1-12/3');
     }
 
@@ -462,7 +470,8 @@ class Task implements Stringable {
      */
     public function yearly(): static
     {
-        return $this->spliceIntoPosition(1, "0")
+        return $this
+            ->spliceIntoPosition(1, "0")
             ->spliceIntoPosition(2, "0")
             ->spliceIntoPosition(3, "1")
             ->spliceIntoPosition(4, "1");
@@ -480,8 +489,9 @@ class Task implements Stringable {
     {
         $this->dailyAt($time);
 
-        return $this->spliceIntoPosition(3, (string) $dayOfMonth)
-            ->spliceIntoPosition(4, (string) $month);
+        return $this
+            ->spliceIntoPosition(3, (string)$dayOfMonth)
+            ->spliceIntoPosition(4, (string)$month);
     }
 
     /**
@@ -510,8 +520,9 @@ class Task implements Stringable {
 
         $hours = is_array($hours) ? implode(',', $hours) : $hours;
 
-        return $this->spliceIntoPosition(1, (string) $minutes)
-            ->spliceIntoPosition(2, (string) $hours);
+        return $this
+            ->spliceIntoPosition(1, (string)$minutes)
+            ->spliceIntoPosition(2, (string)$hours);
     }
 
     /**
@@ -524,7 +535,7 @@ class Task implements Stringable {
     protected function spliceIntoPosition(int $position, string $value): static
     {
         $segments = preg_split("/\s+/", $this->expression);
-        if($segments) {
+        if ($segments) {
             $segments[$position - 1] = $value;
             return $this->cron(implode(' ', $segments));
         }
