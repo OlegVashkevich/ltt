@@ -1,6 +1,7 @@
 {
   "name": "olegvashkevich/ltt",
   "description": "Libs, tricks and tips",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "LTT\\": "src/"
@@ -15,6 +16,7 @@
     }
   },
   "require-dev": {
+    "php": ">=8.2",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^11.5"
   },
@@ -22,14 +24,10 @@
     "stan": "vendor/bin/phpstan analyse -c phpstan.neon",
     "test": "vendor/bin/phpunit tests"
   },
-  "config": {
-    "platform": {
-      "php": "8.2"
-    }
-  },
   "require": {
     "monolog/monolog": "^3.8",
-    "symfony/console": "^7.2"
+    "symfony/console": "^7.2",
+    "olegv/config": "^1.0"
   },
   "bin": [
     "ltt"

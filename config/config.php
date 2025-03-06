@@ -1,6 +1,6 @@
 <?php
 
-use LTT\Config;
+use OlegV\Config;
 
 $secret = require SECRET_PATH;
 
