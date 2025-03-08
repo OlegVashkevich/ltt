@@ -5,3 +5,4 @@ composer.phar
 .env
 secret.php
 var/logs/*.log
+credentials.json

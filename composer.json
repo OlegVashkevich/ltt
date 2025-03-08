@@ -25,9 +25,10 @@
     "test": "vendor/bin/phpunit tests"
   },
   "require": {
-    "monolog/monolog": "^3.8",
     "symfony/console": "^7.2",
-    "olegv/config": "^1.0"
+    "olegv/config": "^1.0",
+    "olegv/sheets": "^1.0",
+    "olegv/logdye": "^1.0"
   },
   "bin": [
     "ltt"

@@ -2,13 +2,13 @@
 ## Описание и требования
 Хотелось бы разукрасить вывод ошибок в консоль при использовании monolog
 ## Реализация
- - копируем в свое пространство имен класс `src/MonologColored.php`
+ - устанавливаем `composer require olegv/logdye`
  - подключаем вместо стандартного, пример
 ```php
         // Создаем экземпляр логгера
         $logger = new Logger('test');
 
-        $formatter = new MonologColored(
+        $formatter = new \OlegV\Logdye(
             "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n",
             "Y-m-d H:i:s"
         );
