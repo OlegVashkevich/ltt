@@ -24,6 +24,7 @@ class MonologColoredTest extends TestCase
             'Emergency' => '[1;5;21;41mEMERGENCY[0m',
         ];
         stream_filter_register("intercept", Intercept::class);
+        Intercept::$cache = '';
         // Создаем экземпляр логгера
         $logger = new Logger('test');
 
